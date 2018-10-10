@@ -22,9 +22,8 @@ public class Prog3Game extends ApplicationAdapter implements InputProcessor {
 	
 	private Camera camera;
 	private Camera miniMapCamera;
-	private float angle;
-	
 	private float fov;
+	private float angle;
 
 	@Override
 	public void create () {
@@ -66,14 +65,14 @@ public class Prog3Game extends ApplicationAdapter implements InputProcessor {
 
 		Gdx.gl.glUseProgram(renderingProgramID);
 
-		//COLOR IS SET HERE
-		//Gdx.gl.glUniform4f(colorLoc, 0.7f, 0.2f, 0, 1);
-
+		// Non-OpenGL creation of assets.
+		
 		BoxGraphic.create(positionLoc, normalLoc);
 		SphereGraphic.create(positionLoc, normalLoc);
 		SincGraphic.create(positionLoc);
 		CoordFrameGraphic.create(positionLoc);
 		Pyramid.create(colorLoc);
+		Maze.create(this.colorLoc, 50, 50);
 
 		Gdx.gl.glClearColor(0.5f, 0.5f, 1.0f, 1.0f);
 
@@ -84,8 +83,9 @@ public class Prog3Game extends ApplicationAdapter implements InputProcessor {
 		Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
 
 		this.fov = 90.0f;
+		// Perspective camera at the first person level, stuck at y = 1, so it will not allow going up/down.
 		this.camera = new Camera(this.viewMatrixLoc, this.projectionMatrixLoc);
-		this.camera.look(new Point3D(-3.0f, 2.0f, 3.0f), new Point3D(0,3,0), new Vector3D(0,1,0));
+		this.camera.look(new Point3D(1.0f, 1.0f, 1.0f), new Point3D(5, 1, 2.5f), new Vector3D(0, 1, 0));
 		
 		this.miniMapCamera = new Camera(this.viewMatrixLoc, this.projectionMatrixLoc);
 		this.miniMapCamera.orthographicProjection(-10, 10, -10, 10, 3.0f, 100);
@@ -104,17 +104,19 @@ public class Prog3Game extends ApplicationAdapter implements InputProcessor {
 		}
 
 		if(Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-			this.camera.yaw(-90.0f * deltaTime);
-		}
-		if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
 			this.camera.yaw(90.0f * deltaTime);
 		}
-		if(Gdx.input.isKeyPressed(Input.Keys.UP)) {
-			this.camera.pitch(-90.0f * deltaTime);
+		if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+			this.camera.yaw(-90.0f * deltaTime);
 		}
-		if(Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+		// Uncomment to be able to go above the maze and under
+		// to better view it.
+		/*if(Gdx.input.isKeyPressed(Input.Keys.UP)) {
 			this.camera.pitch(90.0f * deltaTime);
 		}
+		if(Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+			this.camera.pitch(-90.0f * deltaTime);
+		}*/
 		
 		if(Gdx.input.isKeyPressed(Input.Keys.A)) {
 			this.camera.slide(-3.0f * deltaTime, 0.0f, 0.0f);
@@ -128,19 +130,13 @@ public class Prog3Game extends ApplicationAdapter implements InputProcessor {
 		if(Gdx.input.isKeyPressed(Input.Keys.S)) {
 			this.camera.slide(0.0f, 0.0f, 3.0f * deltaTime);
 		}
-		if(Gdx.input.isKeyPressed(Input.Keys.R)) {
+		/*if(Gdx.input.isKeyPressed(Input.Keys.R)) {
 			this.camera.slide(0.0f, 3.0f * deltaTime, 0.0f);
 		}
 		if(Gdx.input.isKeyPressed(Input.Keys.F)) {
 			this.camera.slide(0.0f, -3.0f * deltaTime, 0.0f);
-		}
+		}*/
 		
-		if(Gdx.input.isKeyPressed(Input.Keys.Q)) {
-			this.camera.roll(-90.0f * deltaTime);
-		}
-		if(Gdx.input.isKeyPressed(Input.Keys.E)) {
-			this.camera.roll(90.0f * deltaTime);
-		}
 		if(Gdx.input.isKeyPressed(Input.Keys.T)) {
 			this.fov -= 30.0f * deltaTime;
 		}
@@ -168,18 +164,40 @@ public class Prog3Game extends ApplicationAdapter implements InputProcessor {
 			
 			ModelMatrix.main.loadIdentityMatrix();
 			
+			// Temporary "grid" system. Red is X, green is Y, blue is Z
+			// REMOVE BEFORE HANDIN
 			ModelMatrix.main.pushMatrix();
-			Gdx.gl.glUniform4f(this.colorLoc, 0.237f, 0.201f, 0.175f, 1.0f);
-			ModelMatrix.main.addTranslation(0.0f, 0.0f, 0.0f);
-			ModelMatrix.main.addScale(50.0f, 0.2f, 50.0f);
+			Gdx.gl.glUniform4f(this.colorLoc, 1, 0, 0, 1.0f);
+			ModelMatrix.main.addTranslation(0, 0, 0);
+			ModelMatrix.main.addScale(10.0f, 0.2f, 0.2f);
 			ModelMatrix.main.setShaderMatrix();
 			BoxGraphic.drawSolidCube();
 			ModelMatrix.main.popMatrix();
 			
-			Pyramid.drawPyramid(0.0f, 0.0f, -10.0f, 0.8f, 0.3f, 1.0f);
-			Pyramid.drawPyramid(0.0f, 0.0f, 10.0f, 0.3f, 0.8f, 0.3f);
-			Pyramid.drawPyramid(10.0f, 0.0f, 0.0f, 0.4f, 0.3f, 1.0f);
-			Pyramid.drawPyramid(-10.0f, 0.0f, 0.0f, 0.7f, 0.8f, 0.3f);
+			ModelMatrix.main.pushMatrix();
+			Gdx.gl.glUniform4f(this.colorLoc, 0, 1, 0, 1.0f);
+			ModelMatrix.main.addTranslation(0, 0, 0);
+			ModelMatrix.main.addScale(0.2f, 10.0f, 0.2f);
+			ModelMatrix.main.setShaderMatrix();
+			BoxGraphic.drawSolidCube();
+			ModelMatrix.main.popMatrix();
+			
+			ModelMatrix.main.pushMatrix();
+			Gdx.gl.glUniform4f(this.colorLoc, 0, 0, 1, 1.0f);
+			ModelMatrix.main.addTranslation(0, 0, 0);
+			ModelMatrix.main.addScale(0.2f, 0.2f, 10.0f);
+			ModelMatrix.main.setShaderMatrix();
+			BoxGraphic.drawSolidCube();
+			ModelMatrix.main.popMatrix();
+			// REMOVE BEFORE HANDIN
+			
+			Maze.drawMaze(0.237f, 0.201f, 0.175f);
+			
+			// Maybe include a pyramid or something inside the maze later on. Idk..
+			//Pyramid.drawPyramid(15.0f, 0.0f, 15.0f, 0.8f, 0.3f, 1.0f);
+			//Pyramid.drawPyramid(35.0f, 0.0f, 15.0f, 0.3f, 0.8f, 0.3f);
+			//Pyramid.drawPyramid(15.0f, 0.0f, 35.0f, 0.4f, 0.3f, 1.0f);
+			//Pyramid.drawPyramid(35.0f, 0.0f, 35.0f, 0.7f, 0.8f, 0.3f);
 			
 			if (viewNum == 1) {
 				Gdx.gl.glUniform4f(this.colorLoc, 1.0f, 0.3f, 0.1f, 1.0f);

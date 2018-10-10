@@ -122,10 +122,10 @@ public class Camera {
 		float[] pm = new float[16];
 		
 		if (this.orthographic) {
-			pm[0] = 2.0f / (right - left); pm[4] = 0.0f;  				  pm[8] = 0.0f; 				pm[12] = -(right + left) / (right - left);
-			pm[1] = 0.0f; 				   pm[5] = 2.0f / (top - bottom); pm[9] = 0.0f; 				pm[13] = -(top + bottom) / (top - bottom);
-			pm[2] = 0.0f; 				   pm[6] = 0.0f; 				  pm[10] = 2.0f / (near - far); pm[14] = (near + far) / (near - far);
-			pm[3] = 0.0f; 				   pm[7] = 0.0f; 				  pm[11] = 0.0f; 				pm[15] = 1.0f;
+			pm[0] = 2.0f / (right - left); 			pm[4] = 0.0f;  				  			pm[8] = 0.0f; 							 pm[12] = -(right + left) / (right - left);
+			pm[1] = 0.0f; 				   			pm[5] = 2.0f / (top - bottom); 			pm[9] = 0.0f; 							 pm[13] = -(top + bottom) / (top - bottom);
+			pm[2] = 0.0f; 				   			pm[6] = 0.0f; 				  			pm[10] = 2.0f / (near - far); 			 pm[14] = (near + far) / (near - far);
+			pm[3] = 0.0f; 				   			pm[7] = 0.0f; 				  			pm[11] = 0.0f; 							 pm[15] = 1.0f;
 		}
 		else {
 			pm[0] = (2.0f * near) / (right - left); pm[4] = 0.0f; 							pm[8] = (right + left) / (right - left); pm[12] = 0.0f;
@@ -140,10 +140,10 @@ public class Camera {
 		
 		Vector3D minusEye = new Vector3D(-this.eye.x, -this.eye.y, -this.eye.z);
 
-		pm[0] = this.u.x; pm[4] = this.u.y; pm[8] = this.u.z; pm[12] = minusEye.dot(this.u);
-		pm[1] = this.v.x; pm[5] = this.v.y; pm[9] = this.v.z; pm[13] = minusEye.dot(this.v);
+		pm[0] = this.u.x; pm[4] = this.u.y; pm[8] = this.u.z;  pm[12] = minusEye.dot(this.u);
+		pm[1] = this.v.x; pm[5] = this.v.y; pm[9] = this.v.z;  pm[13] = minusEye.dot(this.v);
 		pm[2] = this.n.x; pm[6] = this.n.y; pm[10] = this.n.z; pm[14] = minusEye.dot(this.n);
-		pm[3] = 0.0f; pm[7] = 0.0f; pm[11] = 0.0f; pm[15] = 1.0f;
+		pm[3] = 0.0f; 	  pm[7] = 0.0f;  	pm[11] = 0.0f; 	   pm[15] = 1.0f;
 		
 		matrixBuffer.put(pm);
 		matrixBuffer.rewind();
