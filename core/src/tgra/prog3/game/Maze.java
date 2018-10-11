@@ -1,83 +1,94 @@
 package tgra.prog3.game;
 
+import java.util.Random;
+
 import com.badlogic.gdx.Gdx;
 
+/**
+ * Maze generation algorithm found here: https://github.com/joewing/maze/blob/master/Maze.java
+ * BSD-3 license.
+ * // Maze generator in Java
+ * // Joe Wingbermuehle
+ * // 2015-07-27
+ * 
+ * Modified for OpenGL by Sandra Rós Hrefnu Jónsdóttir.
+ */
 public class Maze {
 	private static int colorPointer;
-	private static char maze[][];
-	
-	public static void create(int colorPointer, int dimX, int dimY) {
+	private static byte maze[][];
+
+	private static final int WALL = 0;
+	private static final int SPACE = 1;
+
+	private static int width;
+	private static int height;
+
+	private static Random rand;
+
+	public static void create(int colorPointer, int width, int height) {
 		Maze.colorPointer = colorPointer;
-		
-		Maze.maze = new char[dimX][dimY];
-		int randomizer = 0;
-		// Create a random maze
-		// TODO: Make it s a solvable maze.
-		// 		 Make it an actual maze and not just some random shit all over the place..
-		for (int i = 1; i < maze.length; i++) {
-			for (int j = 0; j < maze[i].length; j++) {
-				randomizer = (int)(Math.random() * 100 + 1);
-				if (randomizer >= 15 && randomizer <= 35 || randomizer >= 75 && randomizer <= 80)
-					maze[i][j] = 'x';
-			}
-		}
-		// Make sure the start point is never a wall. 
-		// Later on, maybe have a dynamic starting point.. or something.
-		maze[0][0] = '0';
+
+		Maze.width = width;
+		Maze.height = height;
+
+		Maze.maze = new byte[width][];
+		Maze.rand = new Random();
+		Maze.generate();
 	}
 
-	public static void drawMaze(float r, float g, float b) {
-		Gdx.gl.glUniform4f(Maze.colorPointer, r, g, b, 1.0f);
+	private static void carve(int x, int y) {
+		final int[] upx = { 1, -1, 0, 0 };
+		final int[] upy = { 0, 0, 1, -1 };
+
+		int dir = Maze.rand.nextInt(4);
+		int count = 0;
+		while(count < 4) {
+			final int x1 = x + upx[dir];
+			final int y1 = y + upy[dir];
+			final int x2 = x1 + upx[dir];
+			final int y2 = y1 + upy[dir];
+			if(maze[x1][y1] == WALL && maze[x2][y2] == WALL) {
+				maze[x1][y1] = SPACE;
+				maze[x2][y2] = SPACE;
+				carve(x2, y2);
+			} else {
+				dir = (dir + 1) % 4;
+				count += 1;
+			}
+		}
+	}
+
+	private static void generate() {
+		for(int x = 0; x < width; x++) {
+			maze[x] = new byte[height];
+			for(int y = 0; y < height; y++) {
+				maze[x][y] = WALL;
+			}
+		}
+		for(int x = 0; x < width; x++) {
+			maze[x][0] = SPACE;
+			maze[x][height - 1] = SPACE;
+		}
+		for(int y = 0; y < height; y++) {
+			maze[0][y] = SPACE;
+			maze[width - 1][y] = SPACE;
+		}
+
+		maze[2][2] = SPACE;
+		Maze.carve(2, 2);
+
+		maze[2][1] = SPACE;
+		maze[width - 3][height - 2] = SPACE;
+	}
+
+	public static void drawMaze() {
 		Maze.drawSurrounding();
-		Maze.drawPath();
-	}
-	
-	private static void drawSurrounding() {
-		ModelMatrix.main.pushMatrix();
-		ModelMatrix.main.addTranslation(25.0f, 0.0f, 25.0f);
-		ModelMatrix.main.addScale(50.0f, 0.2f, 50.0f);
-		ModelMatrix.main.setShaderMatrix();
-		BoxGraphic.drawSolidCube();
-		ModelMatrix.main.popMatrix();
-		
-		ModelMatrix.main.pushMatrix();
-		ModelMatrix.main.addTranslation(25, 2.5f, 0);
-		ModelMatrix.main.addScale(50, 5, 0.1f);
-		ModelMatrix.main.setShaderMatrix();
-		BoxGraphic.drawSolidCube();
-		ModelMatrix.main.popMatrix();
-		
-		ModelMatrix.main.pushMatrix();
-		ModelMatrix.main.addTranslation(50, 2.5f, 25);
-		ModelMatrix.main.addScale(0.1f, 5, 50);
-		ModelMatrix.main.setShaderMatrix();
-		BoxGraphic.drawSolidCube();
-		ModelMatrix.main.popMatrix();
-		
-		ModelMatrix.main.pushMatrix();
-		ModelMatrix.main.addTranslation(0, 2.5f, 25);
-		ModelMatrix.main.addScale(0.1f, 5, 50);
-		ModelMatrix.main.setShaderMatrix();
-		BoxGraphic.drawSolidCube();
-		ModelMatrix.main.popMatrix();
-		
-		ModelMatrix.main.pushMatrix();
-		ModelMatrix.main.addTranslation(25, 2.5f, 50);
-		ModelMatrix.main.addScale(50, 5, 0.1f);
-		ModelMatrix.main.setShaderMatrix();
-		BoxGraphic.drawSolidCube();
-		ModelMatrix.main.popMatrix();
-	}
-	
-	private static void drawPath() {
-		// Wall colour.
 		Gdx.gl.glUniform4f(Maze.colorPointer, 0.5f, 0.5f, 0.5f, 1.0f);
-		// Draw the actual maze.
-		for (int i = 0; i < maze.length; i++) {
-			for (int j = 0; j < maze[i].length; j++) {
-				if (maze[i][j] == 'x') {
+		for(int y = 0; y < height; y++) {
+			for(int x = 0; x < width; x++) {
+				if(maze[x][y] == WALL) {
 					ModelMatrix.main.pushMatrix();
-					ModelMatrix.main.addTranslation(i + 0.5f, 2.5f, j + 0.5f);
+					ModelMatrix.main.addTranslation(x, 2.5f, y);
 					ModelMatrix.main.addScale(1, 5, 1);
 					ModelMatrix.main.setShaderMatrix();
 					BoxGraphic.drawSolidCube();
@@ -85,5 +96,50 @@ public class Maze {
 				}
 			}
 		}
+	}
+
+	private static void drawSurrounding() {
+		// Floor
+		Gdx.gl.glUniform4f(Maze.colorPointer, 0.237f, 0.201f, 0.175f, 1.0f);
+		ModelMatrix.main.pushMatrix();
+		ModelMatrix.main.addTranslation(width / 2, 0.0f, width / 2);
+		ModelMatrix.main.addScale(width - 1, 0.2f, height - 1);
+		ModelMatrix.main.setShaderMatrix();
+		BoxGraphic.drawSolidCube();
+		ModelMatrix.main.popMatrix();
+
+		// Outer walls
+		Gdx.gl.glUniform4f(Maze.colorPointer, 0.5f, 0.5f, 0.5f, 1.0f);
+		// Right
+		ModelMatrix.main.pushMatrix();
+		ModelMatrix.main.addTranslation(width / 2, 2.5f, 0);
+		ModelMatrix.main.addScale(width - 1, 5, 1f);
+		ModelMatrix.main.setShaderMatrix();
+		BoxGraphic.drawSolidCube();
+		ModelMatrix.main.popMatrix();
+
+		// Top
+		ModelMatrix.main.pushMatrix();
+		ModelMatrix.main.addTranslation(width - 1, 2.5f, height / 2);
+		ModelMatrix.main.addScale(1f, 5, height);
+		ModelMatrix.main.setShaderMatrix();
+		BoxGraphic.drawSolidCube();
+		ModelMatrix.main.popMatrix();
+
+		// Bottom
+		ModelMatrix.main.pushMatrix();
+		ModelMatrix.main.addTranslation(0, 2.5f, height / 2);
+		ModelMatrix.main.addScale(1f, 5, height);
+		ModelMatrix.main.setShaderMatrix();
+		BoxGraphic.drawSolidCube();
+		ModelMatrix.main.popMatrix();
+
+		// Right
+		ModelMatrix.main.pushMatrix();
+		ModelMatrix.main.addTranslation(width / 2, 2.5f, height - 1);
+		ModelMatrix.main.addScale(width - 1, 5, 1f);
+		ModelMatrix.main.setShaderMatrix();
+		BoxGraphic.drawSolidCube();
+		ModelMatrix.main.popMatrix();
 	}
 }

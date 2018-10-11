@@ -24,6 +24,9 @@ public class Prog3Game extends ApplicationAdapter implements InputProcessor {
 	private Camera miniMapCamera;
 	private float fov;
 	private float angle;
+	
+	private int width;
+	private int height;
 
 	@Override
 	public void create () {
@@ -72,7 +75,9 @@ public class Prog3Game extends ApplicationAdapter implements InputProcessor {
 		SincGraphic.create(positionLoc);
 		CoordFrameGraphic.create(positionLoc);
 		Pyramid.create(colorLoc);
-		Maze.create(this.colorLoc, 50, 50);
+		this.height = 49;
+		this.width = 49;
+		Maze.create(this.colorLoc, this.width, this.height);
 
 		Gdx.gl.glClearColor(0.5f, 0.5f, 1.0f, 1.0f);
 
@@ -85,7 +90,7 @@ public class Prog3Game extends ApplicationAdapter implements InputProcessor {
 		this.fov = 90.0f;
 		// Perspective camera at the first person level, stuck at y = 1, so it will not allow going up/down.
 		this.camera = new Camera(this.viewMatrixLoc, this.projectionMatrixLoc);
-		this.camera.look(new Point3D(1.0f, 1.0f, 1.0f), new Point3D(5, 1, 2.5f), new Vector3D(0, 1, 0));
+		this.camera.look(new Point3D(2.0f, 1.0f, 1.0f), new Point3D(2.0f, 1.0f, 5.0f), new Vector3D(0.0f, 1.0f, 0.0f));
 		
 		this.miniMapCamera = new Camera(this.viewMatrixLoc, this.projectionMatrixLoc);
 		this.miniMapCamera.orthographicProjection(-10, 10, -10, 10, 3.0f, 100);
@@ -191,7 +196,7 @@ public class Prog3Game extends ApplicationAdapter implements InputProcessor {
 			ModelMatrix.main.popMatrix();
 			// REMOVE BEFORE HANDIN
 			
-			Maze.drawMaze(0.237f, 0.201f, 0.175f);
+			Maze.drawMaze();
 			
 			// Maybe include a pyramid or something inside the maze later on. Idk..
 			//Pyramid.drawPyramid(15.0f, 0.0f, 15.0f, 0.8f, 0.3f, 1.0f);
