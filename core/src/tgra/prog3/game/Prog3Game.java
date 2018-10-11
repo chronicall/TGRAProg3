@@ -123,17 +123,32 @@ public class Prog3Game extends ApplicationAdapter implements InputProcessor {
 			this.camera.pitch(-90.0f * deltaTime);
 		}*/
 		
+		// Can use idx to check if during this fram we end up inside a wall
+		// A and D check the X coordinate maze[idx][this.camera.eye.y]
+		// W and S check the Y coordinate maze[this.camera.eye.x][idx]
 		if(Gdx.input.isKeyPressed(Input.Keys.A)) {
-			this.camera.slide(-3.0f * deltaTime, 0.0f, 0.0f);
+			float delta = -3.0f * deltaTime;
+			int idx = (int)Math.floor(delta + this.camera.eye.x);
+			
+			this.camera.slide(delta, 0.0f, 0.0f);
 		}
 		if(Gdx.input.isKeyPressed(Input.Keys.D)) {
-			this.camera.slide(3.0f * deltaTime, 0.0f, 0.0f);
+			float delta = 3.0f * deltaTime;
+			int idx = (int)Math.floor(delta + this.camera.eye.x);
+
+			this.camera.slide(delta, 0.0f, 0.0f);
 		}
 		if(Gdx.input.isKeyPressed(Input.Keys.W)) {
-			this.camera.slide(0.0f, 0.0f, -3.0f * deltaTime);
+			float delta = -3.0f * deltaTime;
+			int idx = (int)Math.floor(delta + this.camera.eye.z);
+
+			this.camera.slide(0.0f, 0.0f, delta);
 		}
 		if(Gdx.input.isKeyPressed(Input.Keys.S)) {
-			this.camera.slide(0.0f, 0.0f, 3.0f * deltaTime);
+			float delta = 3.0f * deltaTime;
+			int idx = (int)Math.floor(delta + this.camera.eye.z);
+
+			this.camera.slide(0.0f, 0.0f, delta);
 		}
 		/*if(Gdx.input.isKeyPressed(Input.Keys.R)) {
 			this.camera.slide(0.0f, 3.0f * deltaTime, 0.0f);

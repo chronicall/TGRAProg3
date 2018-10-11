@@ -15,7 +15,7 @@ import com.badlogic.gdx.Gdx;
  */
 public class Maze {
 	private static int colorPointer;
-	private static byte maze[][];
+	public static byte maze[][];
 
 	private static final int WALL = 0;
 	private static final int SPACE = 1;
@@ -34,6 +34,16 @@ public class Maze {
 		Maze.maze = new byte[width][];
 		Maze.rand = new Random();
 		Maze.generate();
+		for(int y = 0; y < height; y++) {
+            for(int x = 0; x < width; x++) {
+               if(maze[x][y] == WALL) {
+                  System.out.print("[]");
+               } else {
+                  System.out.print("  ");
+               }
+            }
+            System.out.println();
+         }
 	}
 
 	private static void carve(int x, int y) {
@@ -96,6 +106,16 @@ public class Maze {
 				}
 			}
 		}
+		
+		// The goal.
+		// TODO: Add it somewhere in the middle of the maze.
+		ModelMatrix.main.pushMatrix();
+		Gdx.gl.glUniform4f(Maze.colorPointer, 1f, 0.843f, 0f, 1.0f);
+		ModelMatrix.main.addTranslation(width - 3, 1f, height - 2);
+		ModelMatrix.main.addScale(0.2f, 0.2f, 0.2f);
+		ModelMatrix.main.setShaderMatrix();
+		SphereGraphic.drawSolidSphere();
+		ModelMatrix.main.popMatrix();
 	}
 
 	private static void drawSurrounding() {
@@ -103,41 +123,41 @@ public class Maze {
 		Gdx.gl.glUniform4f(Maze.colorPointer, 0.237f, 0.201f, 0.175f, 1.0f);
 		ModelMatrix.main.pushMatrix();
 		ModelMatrix.main.addTranslation(width / 2, 0.0f, width / 2);
-		ModelMatrix.main.addScale(width - 1, 0.2f, height - 1);
+		ModelMatrix.main.addScale(width, 0.2f, height);
 		ModelMatrix.main.setShaderMatrix();
 		BoxGraphic.drawSolidCube();
 		ModelMatrix.main.popMatrix();
 
 		// Outer walls
 		Gdx.gl.glUniform4f(Maze.colorPointer, 0.5f, 0.5f, 0.5f, 1.0f);
-		// Right
+		// Left
 		ModelMatrix.main.pushMatrix();
-		ModelMatrix.main.addTranslation(width / 2, 2.5f, 0);
-		ModelMatrix.main.addScale(width - 1, 5, 1f);
+		ModelMatrix.main.addTranslation(width / 2, 2.5f, -0.5f);
+		ModelMatrix.main.addScale(width, 5, 0.1f);
 		ModelMatrix.main.setShaderMatrix();
 		BoxGraphic.drawSolidCube();
 		ModelMatrix.main.popMatrix();
 
 		// Top
 		ModelMatrix.main.pushMatrix();
-		ModelMatrix.main.addTranslation(width - 1, 2.5f, height / 2);
-		ModelMatrix.main.addScale(1f, 5, height);
+		ModelMatrix.main.addTranslation(width - 0.5f, 2.5f, height / 2);
+		ModelMatrix.main.addScale(0.1f, 5, height);
 		ModelMatrix.main.setShaderMatrix();
 		BoxGraphic.drawSolidCube();
 		ModelMatrix.main.popMatrix();
 
 		// Bottom
 		ModelMatrix.main.pushMatrix();
-		ModelMatrix.main.addTranslation(0, 2.5f, height / 2);
-		ModelMatrix.main.addScale(1f, 5, height);
+		ModelMatrix.main.addTranslation(-0.5f, 2.5f, height / 2);
+		ModelMatrix.main.addScale(0.1f, 5, height);
 		ModelMatrix.main.setShaderMatrix();
 		BoxGraphic.drawSolidCube();
 		ModelMatrix.main.popMatrix();
 
 		// Right
 		ModelMatrix.main.pushMatrix();
-		ModelMatrix.main.addTranslation(width / 2, 2.5f, height - 1);
-		ModelMatrix.main.addScale(width - 1, 5, 1f);
+		ModelMatrix.main.addTranslation(width / 2, 2.5f, height - 0.5f);
+		ModelMatrix.main.addScale(width, 5, 0.1f);
 		ModelMatrix.main.setShaderMatrix();
 		BoxGraphic.drawSolidCube();
 		ModelMatrix.main.popMatrix();
