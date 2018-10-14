@@ -77,7 +77,6 @@ public class BoxGraphic {
 	}
 
 	public static void drawSolidCube() {
-
 		Gdx.gl.glVertexAttribPointer(vertexPointer, 3, GL20.GL_FLOAT, false, 0, vertexBuffer);
 		Gdx.gl.glVertexAttribPointer(normalPointer, 3, GL20.GL_FLOAT, false, 0, normalBuffer);
 
@@ -91,7 +90,6 @@ public class BoxGraphic {
 	}
 
 	public static void drawOutlineCube() {
-
 		Gdx.gl.glVertexAttribPointer(vertexPointer, 3, GL20.GL_FLOAT, false, 0, vertexBuffer);
 		Gdx.gl.glVertexAttribPointer(normalPointer, 3, GL20.GL_FLOAT, false, 0, normalBuffer);
 		

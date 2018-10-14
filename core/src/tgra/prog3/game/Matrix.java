@@ -3,7 +3,6 @@ package tgra.prog3.game;
 import java.nio.FloatBuffer;
 import java.util.Stack;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.BufferUtils;
 
 public class Matrix {
@@ -165,15 +164,8 @@ public class Matrix {
 		matrix.put(14, tmp.get(14));
 		matrix.put(15, tmp.get(15));
 	}
-
-	public void setShaderMatrix(int shaderMatrixPointer)
-	{
-		this.shaderMatrixPointer = shaderMatrixPointer;
-		Gdx.gl.glUniformMatrix4fv(shaderMatrixPointer, 1, false, matrix);
-	}
-
-	public void setShaderMatrix()
-	{
-		Gdx.gl.glUniformMatrix4fv(shaderMatrixPointer, 1, false, matrix);
+	
+	public FloatBuffer getMatrix() {
+		return this.matrix;
 	}
 }

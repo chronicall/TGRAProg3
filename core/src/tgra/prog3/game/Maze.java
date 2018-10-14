@@ -2,8 +2,6 @@ package tgra.prog3.game;
 
 import java.util.Random;
 
-import com.badlogic.gdx.Gdx;
-
 /**
  * Maze generation algorithm found here: https://github.com/joewing/maze/blob/master/Maze.java
  * BSD-3 license.
@@ -14,7 +12,8 @@ import com.badlogic.gdx.Gdx;
  * Modified for OpenGL by Sandra Rós Hrefnu Jónsdóttir.
  */
 public class Maze {
-	private static int colorPointer;
+	private static Shader3D shader;
+	
 	public static byte maze[][];
 
 	private static final int WALL = 0;
@@ -25,15 +24,23 @@ public class Maze {
 
 	private static Random rand;
 
-	public static void create(int colorPointer, int width, int height) {
-		Maze.colorPointer = colorPointer;
-
+	public static void create(Shader3D shader, int width, int height) {
+		Maze.shader = shader;
 		Maze.width = width;
 		Maze.height = height;
 
 		Maze.maze = new byte[width][];
 		Maze.rand = new Random();
 		Maze.generate();
+		Maze.consolePrint();
+	}
+	
+	public static void newLevel() {
+		Maze.generate();
+		Maze.consolePrint();
+	}
+	
+	private static void consolePrint() {
 		for(int y = 0; y < height; y++) {
             for(int x = 0; x < width; x++) {
                if(maze[x][y] == WALL) {
@@ -43,7 +50,7 @@ public class Maze {
                }
             }
             System.out.println();
-         }
+		}
 	}
 
 	private static void carve(int x, int y) {
@@ -93,14 +100,15 @@ public class Maze {
 
 	public static void drawMaze() {
 		Maze.drawSurrounding();
-		Gdx.gl.glUniform4f(Maze.colorPointer, 0.5f, 0.5f, 0.5f, 1.0f);
+		Maze.shader.setMaterialDiffuse(0.5f, 0.5f, 0.5f, 1.0f);
 		for(int y = 0; y < height; y++) {
 			for(int x = 0; x < width; x++) {
 				if(maze[x][y] == WALL) {
 					ModelMatrix.main.pushMatrix();
+					Maze.shader.setMaterialDiffuse(0.5f, 0.5f, 0.5f, 1.0f);
 					ModelMatrix.main.addTranslation(x, 2.5f, y);
 					ModelMatrix.main.addScale(1, 5, 1);
-					ModelMatrix.main.setShaderMatrix();
+					Maze.shader.setModelMatrix(ModelMatrix.main.getMatrix());
 					BoxGraphic.drawSolidCube();
 					ModelMatrix.main.popMatrix();
 				}
@@ -110,31 +118,32 @@ public class Maze {
 		// The goal.
 		// TODO: Add it somewhere in the middle of the maze.
 		ModelMatrix.main.pushMatrix();
-		Gdx.gl.glUniform4f(Maze.colorPointer, 1f, 0.843f, 0f, 1.0f);
+		Maze.shader.setMaterialDiffuse(1f, 0.843f, 0f, 1.0f);
 		ModelMatrix.main.addTranslation(width - 3, 1f, height - 2);
 		ModelMatrix.main.addScale(0.2f, 0.2f, 0.2f);
-		ModelMatrix.main.setShaderMatrix();
+		Maze.shader.setModelMatrix(ModelMatrix.main.getMatrix());
 		SphereGraphic.drawSolidSphere();
 		ModelMatrix.main.popMatrix();
 	}
 
 	private static void drawSurrounding() {
 		// Floor
-		Gdx.gl.glUniform4f(Maze.colorPointer, 0.237f, 0.201f, 0.175f, 1.0f);
+		//Gdx.gl.glUniform4f(Maze.colorPointer, 0.237f, 0.201f, 0.175f, 1.0f);
+		Maze.shader.setMaterialDiffuse(1.0f, 1.0f, 1.0f, 1.0f);
 		ModelMatrix.main.pushMatrix();
 		ModelMatrix.main.addTranslation(width / 2, 0.0f, width / 2);
 		ModelMatrix.main.addScale(width, 0.2f, height);
-		ModelMatrix.main.setShaderMatrix();
+		Maze.shader.setModelMatrix(ModelMatrix.main.getMatrix());
 		BoxGraphic.drawSolidCube();
 		ModelMatrix.main.popMatrix();
 
 		// Outer walls
-		Gdx.gl.glUniform4f(Maze.colorPointer, 0.5f, 0.5f, 0.5f, 1.0f);
+		Maze.shader.setMaterialDiffuse(0.5f, 0.5f, 0.5f, 1.0f);
 		// Left
 		ModelMatrix.main.pushMatrix();
 		ModelMatrix.main.addTranslation(width / 2, 2.5f, -0.5f);
 		ModelMatrix.main.addScale(width, 5, 0.1f);
-		ModelMatrix.main.setShaderMatrix();
+		Maze.shader.setModelMatrix(ModelMatrix.main.getMatrix());
 		BoxGraphic.drawSolidCube();
 		ModelMatrix.main.popMatrix();
 
@@ -142,7 +151,7 @@ public class Maze {
 		ModelMatrix.main.pushMatrix();
 		ModelMatrix.main.addTranslation(width - 0.5f, 2.5f, height / 2);
 		ModelMatrix.main.addScale(0.1f, 5, height);
-		ModelMatrix.main.setShaderMatrix();
+		Maze.shader.setModelMatrix(ModelMatrix.main.getMatrix());
 		BoxGraphic.drawSolidCube();
 		ModelMatrix.main.popMatrix();
 
@@ -150,7 +159,7 @@ public class Maze {
 		ModelMatrix.main.pushMatrix();
 		ModelMatrix.main.addTranslation(-0.5f, 2.5f, height / 2);
 		ModelMatrix.main.addScale(0.1f, 5, height);
-		ModelMatrix.main.setShaderMatrix();
+		Maze.shader.setModelMatrix(ModelMatrix.main.getMatrix());
 		BoxGraphic.drawSolidCube();
 		ModelMatrix.main.popMatrix();
 
@@ -158,7 +167,7 @@ public class Maze {
 		ModelMatrix.main.pushMatrix();
 		ModelMatrix.main.addTranslation(width / 2, 2.5f, height - 0.5f);
 		ModelMatrix.main.addScale(width, 5, 0.1f);
-		ModelMatrix.main.setShaderMatrix();
+		Maze.shader.setModelMatrix(ModelMatrix.main.getMatrix());
 		BoxGraphic.drawSolidCube();
 		ModelMatrix.main.popMatrix();
 	}

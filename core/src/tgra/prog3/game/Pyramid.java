@@ -1,19 +1,17 @@
 package tgra.prog3.game;
 
-import com.badlogic.gdx.Gdx;
-
 public class Pyramid {
-	private static int colorPointer;
+	private static Shader3D shader;
 	
-	public static void create(int colorPointer) {
-		Pyramid.colorPointer = colorPointer;
+	public static void create(Shader3D shader) {
+		Pyramid.shader = shader;
 	}
 
-	public static void drawPyramid(float x, float y, float z, float r, float g, float b) {
+	public static void drawPyramid(float x, float y, float z, float r, float g, float b, float a) {
 		int maxLevel = 9;
 		
 		ModelMatrix.main.pushMatrix();
-		Gdx.gl.glUniform4f(Pyramid.colorPointer, r, g, b, 1.0f);
+		Pyramid.shader.setMaterialDiffuse(r, g, b, a);
 		ModelMatrix.main.addTranslation(x, y, z);
 		
 		ModelMatrix.main.pushMatrix();
@@ -34,7 +32,7 @@ public class Pyramid {
 					else {
 						ModelMatrix.main.addScale(1.0f, 1.0f, 0.2f);
 					}
-					ModelMatrix.main.setShaderMatrix();
+					Pyramid.shader.setModelMatrix(ModelMatrix.main.getMatrix());
 					BoxGraphic.drawSolidCube();
 					ModelMatrix.main.popMatrix();
 				}

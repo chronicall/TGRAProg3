@@ -2,7 +2,6 @@ package tgra.prog3.game;
 
 import java.nio.FloatBuffer;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.BufferUtils;
 
 public class Camera {
@@ -20,14 +19,9 @@ public class Camera {
 	float near;
 	float far;
 	
-	private int viewMatrixPointer;
-	private int projectionMatrixPointer;
 	private FloatBuffer matrixBuffer;
 	
-	public Camera(int viewMatrixPointer, int projectionMatrixPointer) {
-		this.viewMatrixPointer = viewMatrixPointer;
-		this.projectionMatrixPointer = projectionMatrixPointer;
-		
+	public Camera() {
 		this.matrixBuffer = BufferUtils.newFloatBuffer(16);
 		
 		this.orthographic = true;
@@ -118,7 +112,23 @@ public class Camera {
 		this.orthographic = false;
 	}
 	
-	public void setShaderMatrices() {
+	public FloatBuffer getViewMatrix() {
+		float[] pm = new float[16];
+		
+		Vector3D minusEye = new Vector3D(-this.eye.x, -this.eye.y, -this.eye.z);
+
+		pm[0] = this.u.x; pm[4] = this.u.y; pm[8] = this.u.z;  pm[12] = minusEye.dot(this.u);
+		pm[1] = this.v.x; pm[5] = this.v.y; pm[9] = this.v.z;  pm[13] = minusEye.dot(this.v);
+		pm[2] = this.n.x; pm[6] = this.n.y; pm[10] = this.n.z; pm[14] = minusEye.dot(this.n);
+		pm[3] = 0.0f; 	  pm[7] = 0.0f;  	pm[11] = 0.0f; 	   pm[15] = 1.0f;
+		
+		matrixBuffer.put(pm);
+		matrixBuffer.rewind();
+		
+		return matrixBuffer;
+	}
+	
+	public FloatBuffer getProjectionMatrix() {
 		float[] pm = new float[16];
 		
 		if (this.orthographic) {
@@ -133,20 +143,9 @@ public class Camera {
 			pm[2] = 0.0f;							pm[6] = 0.0f; 							pm[10] = -(far + near) / (far - near);   pm[14] = -(2.0f * far * near) / (far - near);
 			pm[3] = 0.0f; 							pm[7] = 0.0f; 							pm[11] = -1.0f; 					  	 pm[15] = 0.0f;
 		}
-		matrixBuffer = BufferUtils.newFloatBuffer(16);
-		matrixBuffer.put(pm);
-		matrixBuffer.rewind();
-		Gdx.gl.glUniformMatrix4fv(this.projectionMatrixPointer, 1, false, matrixBuffer);
-		
-		Vector3D minusEye = new Vector3D(-this.eye.x, -this.eye.y, -this.eye.z);
-
-		pm[0] = this.u.x; pm[4] = this.u.y; pm[8] = this.u.z;  pm[12] = minusEye.dot(this.u);
-		pm[1] = this.v.x; pm[5] = this.v.y; pm[9] = this.v.z;  pm[13] = minusEye.dot(this.v);
-		pm[2] = this.n.x; pm[6] = this.n.y; pm[10] = this.n.z; pm[14] = minusEye.dot(this.n);
-		pm[3] = 0.0f; 	  pm[7] = 0.0f;  	pm[11] = 0.0f; 	   pm[15] = 1.0f;
 		
 		matrixBuffer.put(pm);
 		matrixBuffer.rewind();
-		Gdx.gl.glUniformMatrix4fv(this.viewMatrixPointer, 1, false, matrixBuffer);
+		return matrixBuffer;
 	}
 }
