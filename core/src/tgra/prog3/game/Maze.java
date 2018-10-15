@@ -23,6 +23,8 @@ public class Maze {
 	private static int height;
 
 	private static Random rand;
+	
+	public static int goalX, goalZ;
 
 	public static void create(Shader3D shader, int width, int height) {
 		Maze.shader = shader;
@@ -31,8 +33,6 @@ public class Maze {
 
 		Maze.maze = new byte[width][];
 		Maze.rand = new Random();
-		Maze.generate();
-		Maze.consolePrint();
 	}
 	
 	public static void newLevel() {
@@ -96,16 +96,34 @@ public class Maze {
 
 		maze[2][1] = SPACE;
 		maze[width - 3][height - 2] = SPACE;
+		
+		goalX = width / 2;
+		goalZ = height / 2;
+		
+		int randomizer = 0;
+		while (maze[goalX][goalZ] == 0) {
+			randomizer = Maze.rand.nextInt(100);
+			if (randomizer >= 0 && randomizer <= 49) {
+				goalX -= 1;
+				goalZ += 1;
+			} else {
+				goalX += 1;
+				goalZ -= 1;
+			}
+		}
 	}
 
-	public static void drawMaze() {
+	public static void drawMaze(float angle) {
 		Maze.drawSurrounding();
 		Maze.shader.setMaterialDiffuse(0.5f, 0.5f, 0.5f, 1.0f);
+		Maze.shader.setMaterialShiniess(10.0f);
 		for(int y = 0; y < height; y++) {
 			for(int x = 0; x < width; x++) {
 				if(maze[x][y] == WALL) {
 					ModelMatrix.main.pushMatrix();
+					Maze.shader.setMaterialAmbient(0.6f, 0.6f, 0.6f, 1.0f);
 					Maze.shader.setMaterialDiffuse(0.5f, 0.5f, 0.5f, 1.0f);
+					Maze.shader.setMaterialSpecular(0.3f, 0.3f, 0.3f, 1.0f);
 					ModelMatrix.main.addTranslation(x, 2.5f, y);
 					ModelMatrix.main.addScale(1, 5, 1);
 					Maze.shader.setModelMatrix(ModelMatrix.main.getMatrix());
@@ -115,21 +133,28 @@ public class Maze {
 			}
 		}
 		
-		// The goal.
-		// TODO: Add it somewhere in the middle of the maze.
+		float s = (float)Math.sin(angle * Math.PI / 180.0);
+		
+		// The goal/treasure
 		ModelMatrix.main.pushMatrix();
-		Maze.shader.setMaterialDiffuse(1f, 0.843f, 0f, 1.0f);
-		ModelMatrix.main.addTranslation(width - 3, 1f, height - 2);
+		//Maze.shader.setMaterialAmbient(1.0f, 0.6f, 0.0f, 1.0f);
+		Maze.shader.setMaterialDiffuse(1.0f, 0.843f, 0.0f, 1.0f);
+		Maze.shader.setMaterialSpecular(1.0f, 0.8f, 0.8f, 1.0f);
+		Maze.shader.setMaterialEmission(0.8f, 0.8f, 0.8f, 1.0f);
+		Maze.shader.setMaterialShiniess(40.0f);
+		ModelMatrix.main.addTranslation(goalX, 1.2f + s, goalZ);
 		ModelMatrix.main.addScale(0.2f, 0.2f, 0.2f);
 		Maze.shader.setModelMatrix(ModelMatrix.main.getMatrix());
 		SphereGraphic.drawSolidSphere();
 		ModelMatrix.main.popMatrix();
+		Maze.shader.setMaterialEmission(0.0f, 0.0f, 0.0f, 1.0f);
 	}
 
 	private static void drawSurrounding() {
 		// Floor
 		//Gdx.gl.glUniform4f(Maze.colorPointer, 0.237f, 0.201f, 0.175f, 1.0f);
 		Maze.shader.setMaterialDiffuse(1.0f, 1.0f, 1.0f, 1.0f);
+		Maze.shader.setMaterialShiniess(5.0f);
 		ModelMatrix.main.pushMatrix();
 		ModelMatrix.main.addTranslation(width / 2, 0.0f, width / 2);
 		ModelMatrix.main.addScale(width, 0.2f, height);
@@ -138,7 +163,8 @@ public class Maze {
 		ModelMatrix.main.popMatrix();
 
 		// Outer walls
-		Maze.shader.setMaterialDiffuse(0.5f, 0.5f, 0.5f, 1.0f);
+		Maze.shader.setMaterialDiffuse(0.2f, 0.2f, 0.2f, 1.0f);
+		Maze.shader.setMaterialShiniess(5.0f);
 		// Left
 		ModelMatrix.main.pushMatrix();
 		ModelMatrix.main.addTranslation(width / 2, 2.5f, -0.5f);
@@ -169,6 +195,70 @@ public class Maze {
 		ModelMatrix.main.addScale(width, 5, 0.1f);
 		Maze.shader.setModelMatrix(ModelMatrix.main.getMatrix());
 		BoxGraphic.drawSolidCube();
+		ModelMatrix.main.popMatrix();
+		
+		// Light poles
+		Maze.shader.setMaterialDiffuse(0.1f, 0.1f, 0.1f, 1.0f);
+		Maze.shader.setMaterialShiniess(5.0f);
+		// 0, 0
+		ModelMatrix.main.pushMatrix();
+		ModelMatrix.main.addTranslation(-0.5f, 6.0f, -0.5f);
+		ModelMatrix.main.addScale(0.2f, 12, 0.2f);
+		Maze.shader.setModelMatrix(ModelMatrix.main.getMatrix());
+		BoxGraphic.drawSolidCube();
+		ModelMatrix.main.popMatrix();
+		// width, 0
+		ModelMatrix.main.pushMatrix();
+		ModelMatrix.main.addTranslation(width - 0.5f, 6.0f, -0.5f);
+		ModelMatrix.main.addScale(0.2f, 12, 0.2f);
+		Maze.shader.setModelMatrix(ModelMatrix.main.getMatrix());
+		BoxGraphic.drawSolidCube();
+		ModelMatrix.main.popMatrix();
+		// width, height
+		ModelMatrix.main.pushMatrix();
+		ModelMatrix.main.addTranslation(width - 0.5f, 6.0f, height - 0.5f);
+		ModelMatrix.main.addScale(0.2f, 12, 0.2f);
+		Maze.shader.setModelMatrix(ModelMatrix.main.getMatrix());
+		BoxGraphic.drawSolidCube();
+		ModelMatrix.main.popMatrix();
+		// 0, height
+		ModelMatrix.main.pushMatrix();
+		ModelMatrix.main.addTranslation(-0.5f, 6.0f, height - 0.5f);
+		ModelMatrix.main.addScale(0.2f, 12, 0.2f);
+		Maze.shader.setModelMatrix(ModelMatrix.main.getMatrix());
+		BoxGraphic.drawSolidCube();
+		ModelMatrix.main.popMatrix();
+		
+		// Light bulbs
+		Maze.shader.setMaterialDiffuse(1.0f, 0.945f, 0.878f, 1.0f);
+		Maze.shader.setMaterialShiniess(50.0f);
+		// 0, 0
+		ModelMatrix.main.pushMatrix();
+		ModelMatrix.main.addTranslation(-0.5f, 12.0f, -0.5f);
+		ModelMatrix.main.addScale(0.8f, 0.8f, 0.8f);
+		Maze.shader.setModelMatrix(ModelMatrix.main.getMatrix());
+		SphereGraphic.drawSolidSphere();
+		ModelMatrix.main.popMatrix();
+		// width, 0
+		ModelMatrix.main.pushMatrix();
+		ModelMatrix.main.addTranslation(width - 0.5f, 12.0f, -0.5f);
+		ModelMatrix.main.addScale(0.8f, 0.8f, 0.8f);
+		Maze.shader.setModelMatrix(ModelMatrix.main.getMatrix());
+		SphereGraphic.drawSolidSphere();
+		ModelMatrix.main.popMatrix();
+		// width, height
+		ModelMatrix.main.pushMatrix();
+		ModelMatrix.main.addTranslation(width - 0.5f, 12.0f, height - 0.5f);
+		ModelMatrix.main.addScale(0.8f, 0.8f, 0.8f);
+		Maze.shader.setModelMatrix(ModelMatrix.main.getMatrix());
+		SphereGraphic.drawSolidSphere();
+		ModelMatrix.main.popMatrix();
+		// 0, height
+		ModelMatrix.main.pushMatrix();
+		ModelMatrix.main.addTranslation(-0.5f, 12.0f, height - 0.5f);
+		ModelMatrix.main.addScale(0.8f, 0.8f, 0.8f);
+		Maze.shader.setModelMatrix(ModelMatrix.main.getMatrix());
+		SphereGraphic.drawSolidSphere();
 		ModelMatrix.main.popMatrix();
 	}
 }

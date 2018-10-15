@@ -26,4 +26,8 @@ public class Point3D {
 		this.y = y;
 		this.z = z;
 	}
+	
+	public Vector3D different(Point3D p1) {
+		return new Vector3D(this.x - p1.x, this.y - p1.y, this.z - p1.z);
+	}
 }

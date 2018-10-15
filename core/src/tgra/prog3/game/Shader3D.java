@@ -17,18 +17,25 @@ public class Shader3D {
 	private int viewMatrixLoc;
 	private int projectionMatrixLoc;
 
-	//private int colorLoc;
-	private int lightPositionLoc;
-	private int lightDiffuseLoc;
+	private int eyePositionLoc;
 	
+	private int globalAmbientLoc;
+	
+	private int lightPositionLoc;
+	private int lightColourLoc;
+	
+	private int materialAmbientLoc;
 	private int materialDiffuseLoc;
+	private int materialSpecularLoc;
+	private int materialEmissionLoc;
+	private int materialShininessLoc;
 	
 	public Shader3D() {
 		String vertexShaderString;
 		String fragmentShaderString;
 
-		vertexShaderString = Gdx.files.internal("shaders/simple3D.vert").readString();
-		fragmentShaderString =  Gdx.files.internal("shaders/simple3D.frag").readString();
+		vertexShaderString = Gdx.files.internal("shaders/mazeFragmentLighting3D.vert").readString();
+		fragmentShaderString =  Gdx.files.internal("shaders/mazeFragmentLighting3D.frag").readString();
 
 		this.vertexShaderID = Gdx.gl.glCreateShader(GL20.GL_VERTEX_SHADER);
 		this.fragmentShaderID = Gdx.gl.glCreateShader(GL20.GL_FRAGMENT_SHADER);
@@ -56,29 +63,51 @@ public class Shader3D {
 		this.viewMatrixLoc			= Gdx.gl.glGetUniformLocation(this.renderingProgramID, "u_viewMatrix");
 		this.projectionMatrixLoc	= Gdx.gl.glGetUniformLocation(this.renderingProgramID, "u_projectionMatrix");
 
-		//this.colorLoc				= Gdx.gl.glGetUniformLocation(this.renderingProgramID, "u_color");
-		this.lightPositionLoc		= Gdx.gl.glGetUniformLocation(this.renderingProgramID, "u_lightPosition");
-		this.lightDiffuseLoc		= Gdx.gl.glGetUniformLocation(this.renderingProgramID, "u_lightDiffuse");
+		this.eyePositionLoc			= Gdx.gl.glGetUniformLocation(this.renderingProgramID, "u_eyePosition");
 		
+		this.globalAmbientLoc		= Gdx.gl.glGetUniformLocation(this.renderingProgramID, "u_globalAmbient");
+		
+		this.lightPositionLoc		= Gdx.gl.glGetUniformLocation(this.renderingProgramID, "u_lightPosition");
+		this.lightColourLoc			= Gdx.gl.glGetUniformLocation(this.renderingProgramID, "u_lightColour");
+		
+		this.materialAmbientLoc		= Gdx.gl.glGetUniformLocation(this.renderingProgramID, "u_materialAmbient");
 		this.materialDiffuseLoc		= Gdx.gl.glGetUniformLocation(this.renderingProgramID, "u_materialDiffuse");
+		this.materialSpecularLoc	= Gdx.gl.glGetUniformLocation(this.renderingProgramID, "u_materialSpecular");
+		this.materialEmissionLoc	= Gdx.gl.glGetUniformLocation(this.renderingProgramID, "u_materialEmission");
+		this.materialShininessLoc	= Gdx.gl.glGetUniformLocation(this.renderingProgramID, "u_materialShiniess");
 
 		Gdx.gl.glUseProgram(this.renderingProgramID);
 	}
-	
-	/*public void setColour(float r, float g, float b, float a) {
-		Gdx.gl.glUniform4f(this.colorLoc, r, g, b, a);
-	}*/
 
+	public void setEyePosition(float x, float y, float z, float w) {
+		Gdx.gl.glUniform4f(this.eyePositionLoc, x, y, z, w);
+	}
+	
+	public void setGlobalAmbient(float r, float g, float b, float a) {
+		Gdx.gl.glUniform4f(this.globalAmbientLoc, r, g, b, a);
+	}
+	
 	public void setLightPosition(float x, float y, float z, float w) {
 		Gdx.gl.glUniform4f(this.lightPositionLoc, x, y, z, w);
 	}
+	public void setLightColour(float r, float g, float b, float a) {
+		Gdx.gl.glUniform4f(this.lightColourLoc, r, g, b, a);
+	}
 	
+	public void setMaterialAmbient(float r, float g, float b, float a) {
+		Gdx.gl.glUniform4f(this.materialAmbientLoc, r, g, b, a);
+	}
 	public void setMaterialDiffuse(float r, float g, float b, float a) {
 		Gdx.gl.glUniform4f(this.materialDiffuseLoc, r, g, b, a);
 	}
-
-	public void setLightDiffuse(float r, float g, float b, float a) {
-		Gdx.gl.glUniform4f(this.lightDiffuseLoc, r, g, b, a);
+	public void setMaterialSpecular(float r, float g, float b, float a) {
+		Gdx.gl.glUniform4f(this.materialSpecularLoc, r, g, b, a);
+	}
+	public void setMaterialEmission(float r, float g, float b, float a) {
+		Gdx.gl.glUniform4f(this.materialEmissionLoc, r, g, b, a);
+	}
+	public void setMaterialShiniess(float shine) {
+		Gdx.gl.glUniform1f(this.materialShininessLoc, shine);
 	}
 	
 	public int getVertexPointer() {

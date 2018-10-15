@@ -3,32 +3,21 @@ package tgra.prog3.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 
-public class Player {
-	private Shader3D shader;
+public class Player extends Character {
+	private boolean collision;
 	
-	public ModelMatrix origin;
+	public Player(Shader3D shader, int width, int height, Point3D position, Vector3D matColour, float shine) {
+		super(shader, width, height, position, matColour, shine);
+		this.collision = false;
+	}
 	
-	private int width, height;
-	
-	private boolean xPosCollision, xNegCollision, zPosCollision, zNegCollision;
-	
-	public Player(Shader3D shader, int width, int height) {
-		this.shader = shader;
-		this.width = width;
-		this.height = height;
-		this.origin = new ModelMatrix();
-		this.origin.loadIdentityMatrix();
-		this.origin.addTranslation(2.0f, 1.0f, 1.0f);
-		this.origin.addScale(0.4f, 1.0f, 0.4f);
-		
-		this.xPosCollision = false;
-		this.xNegCollision = false;
-		this.zPosCollision = false;
-		this.zNegCollision = false;
+	public void display() {
+		super.display();
 	}
 	
 	public void update(float deltaTime) {
 		// Boundary check
+		super.update(deltaTime);
 		Point3D originPoint = this.origin.getOrigin();
 		if (originPoint.x >= this.width - 1) {
 			this.origin.addTranslationBaseCoords(this.width - originPoint.x - 1.0f, 0.0f, 0.0f);
@@ -48,84 +37,132 @@ public class Player {
 			this.origin.addRoatationY(90.0f * deltaTime);
 		}
 		
-		this.xPosCollision = false;
-		this.xNegCollision = false;
-		this.zPosCollision = false;
-		this.zNegCollision = false;
-		
+		Vector3D vecUpZ = new Vector3D(0.0f, 0.0f, 4.0f * deltaTime);
+		Vector3D vecDownZ = new Vector3D(0.0f, 0.0f, -4.0f * deltaTime);
+		Vector3D vecUpX = new Vector3D(4.0f * deltaTime, 0.0f, 0.0f);
+		Vector3D vecDownX = new Vector3D(-4.0f * deltaTime, 0.0f, 0.0f);
+		this.collision = false;
 		if (Gdx.input.isKeyPressed(Keys.W)) {
-			this.detectCollision();
-			if (!this.xPosCollision) {
-				this.origin.addTranslation(0.0f, 0.0f, 4.0f * deltaTime);
+			this.detectCollision(vecUpZ, originPoint);
+			if (!this.collision) {
+				this.origin.addTranslation(vecUpZ.x, vecUpZ.y, vecUpZ.z);
+			} else {
+				// TODO: determine which direction we're traveling to see which direction character should slide.
+				this.origin.addTranslation(vecUpX.x - 2.0f * deltaTime, vecUpX.y, vecUpX.z);
 			}
 		}
+		
+		this.collision = false;
 		if (Gdx.input.isKeyPressed(Keys.S)) {
-			this.detectCollision();
-			if (!this.xNegCollision) {
-				this.origin.addTranslation(0.0f, 0.0f, -4.0f * deltaTime);
+			this.detectCollision(vecDownZ, originPoint);
+			if (!this.collision) {
+				this.origin.addTranslation(vecDownZ.x, vecDownZ.y, vecDownZ.z);
+			} else {
+				// TODO: determine which direction we're traveling to see which direction character should slide.
+				this.origin.addTranslation(vecDownX.x + 2.0f * deltaTime, vecDownX.y, vecDownX.z);
 			}
 		}
 		
+		this.collision = false;
 		if (Gdx.input.isKeyPressed(Keys.A)) {
-			this.detectCollision();
-			if (!this.zPosCollision) {
-				this.origin.addTranslation(4.0f * deltaTime, 0.0f, 0.0f);
+			this.detectCollision(vecUpX, originPoint);
+			if (!this.collision) {
+				this.origin.addTranslation(vecUpX.x, vecUpX.y, vecUpX.z);
+			} else {
+				// TODO: determine which direction we're traveling to see which direction character should slide.
+				this.origin.addTranslation(vecUpZ.x, vecUpZ.y, vecUpZ.z - 2.0f * deltaTime);
 			}
 		}
 		
+		this.collision = false;
 		if (Gdx.input.isKeyPressed(Keys.D)) {
-			this.detectCollision();
-			if (!this.zNegCollision) {
-				this.origin.addTranslation(-4.0f * deltaTime, 0.0f, 0.0f);
+			this.detectCollision(vecDownX, originPoint);
+			if (!this.collision) {
+				this.origin.addTranslation(vecDownX.x, vecDownX.y, vecDownX.z);
+			} else {
+				// TODO: determine which direction we're traveling to see which direction character should slide.
+				this.origin.addTranslation(vecDownZ.x, vecDownZ.y, vecDownZ.z + 2.0f * deltaTime);
 			}
 		}
 	}
 	
-	public void display() {
-		// Player setup
-		this.shader.setMaterialDiffuse(0.3f, 0.3f, 1.0f, 1.0f);
-		this.origin.pushMatrix();
-		ModelMatrix.main.addTransformation(this.origin.matrix);
-		this.shader.setModelMatrix(ModelMatrix.main.getMatrix());
-		SphereGraphic.drawSolidSphere();
-		this.origin.popMatrix();
-	}
-	
-	public void detectCollision() {
-		Point3D originPoint = this.origin.getOrigin();
-		
-		if (((int)originPoint.x > 0 && (int)originPoint.x < this.width - 1) && ((int)originPoint.z > 0 && (int)originPoint.z < this.height - 1)) {
-			float radiusSquared = (float)Math.pow(0.5, 0.4);
-			System.out.println("1 === X: " + originPoint.x + " - Z: " + originPoint.z);
-			if (Maze.maze[(int)originPoint.x + 1][(int)originPoint.z] == 0) {
-				float distance = Math.abs((float)Math.pow((int)(originPoint.x + 1) - originPoint.x, 2) + (float)Math.pow(originPoint.z - originPoint.z, 2));
+	public void detectCollision(Vector3D vec, Point3D originPoint) {
+		Point3D movingTo = originPoint.add(vec);
+		// Check whether we'd be outside the boundary of the maze, avoiding index out of bounds errors.
+		if (((int)movingTo.x > 0 && (int)movingTo.x < this.width - 1) && ((int)movingTo.z > 0 && (int)movingTo.z < this.height - 1)) {
+			Vector3D direction = movingTo.different(originPoint);
+			
+			boolean xUp = false;
+			boolean xDown = false;
+			boolean xUnchanged = false;
+			boolean zUp = false;
+			boolean zDown = false;
+			boolean zUnchanged = false;
+			
+			if (direction.x > 0) {
+				// moving along the x axis, increasing
+				xUp = true;
+			} else if (direction.x < 0) {
+				xDown = true;
+				// moving along the x axis, decreasing
+			} else {
+				xUnchanged = true;
+			}
+			if (direction.z > 0) {
+				zUp = true;
+				//moving along the z axis, increasing
+			} else if (direction.z < 0) {
+				zDown = true;
+				//moving along the z axis, decreasing
+			} else {
+				zUnchanged = true;
+			}
+			
+			float radiusSquared = (float)Math.pow(0.5 + 0.4, 2);
+			
+			if (Maze.maze[(int)movingTo.x + 1][(int)movingTo.z] == 0 && xUp && zUnchanged) {
+				// Next to a wall up on the x axis
+				float distance = Math.abs(
+					(float)Math.pow((int)(movingTo.x + 1) - movingTo.x, 2) + 
+					(float)Math.pow(movingTo.z - movingTo.z, 2)
+				);
 				if (distance < radiusSquared) {
-					System.out.println("X POS COLLISION");
-					this.xPosCollision = true;
+					this.collision = true;
 				}
 			}
-			System.out.println("2 === X: " + originPoint.x + " - Z: " + originPoint.z);
-			if (Maze.maze[(int)originPoint.x - 1][(int)originPoint.z] == 0) {
-				float distance = Math.abs((float)Math.pow((int)(originPoint.x - 1) - originPoint.x, 2) + (float)Math.pow(originPoint.z - originPoint.z, 2));
+			if (Maze.maze[(int)movingTo.x][(int)movingTo.z - 1] == 0 && xUnchanged && zDown) {
+				// Next to a wall down on the z axis
+				float distance = Math.abs(
+					(float)Math.pow(movingTo.x - movingTo.x, 2) +
+					(float)Math.pow((int)(movingTo.z - 1) - movingTo.z, 2)
+				);
 				if (distance < radiusSquared) {
-					System.out.println("X NEG COLLISION");
-					this.xNegCollision = true;
+					this.collision = true;
 				}
 			}
-			System.out.println("3 === X: " + originPoint.x + " - Z: " + originPoint.z);
-			if (Maze.maze[(int)originPoint.x][(int)originPoint.z + 1] == 0) {
-				float distance = Math.abs((float)Math.pow(originPoint.x - originPoint.x, 2) + (float)Math.pow((int)(originPoint.z + 1) - originPoint.z, 2));
+			if (Maze.maze[(int)movingTo.x][(int)movingTo.z] == 0) {
+				// moving inside a wall
+				// This should never happen..
+				this.collision = true;
+			}
+			if (Maze.maze[(int)movingTo.x][(int)movingTo.z + 1] == 0 && xUnchanged && zUp) {
+				// Next to a wall up on the z axis
+				float distance = Math.abs(
+					(float)Math.pow(movingTo.x - movingTo.x, 2) +
+					(float)Math.pow((int)(movingTo.z + 1) - movingTo.z, 2)
+				);
 				if (distance < radiusSquared) {
-					System.out.println("Z POS COLLISION");
-					this.zPosCollision = true;
+					this.collision = true;
 				}
 			}
-			System.out.println("4 === X: " + originPoint.x + " - Z: " + originPoint.z);
-			if (Maze.maze[(int)originPoint.x][(int)originPoint.z - 1] == 0) {
-				float distance = Math.abs((float)Math.pow(originPoint.x - originPoint.x, 2) + (float)Math.pow((int)(originPoint.z - 1) - originPoint.z, 2));
+			if (Maze.maze[(int)movingTo.x - 1][(int)movingTo.z] == 0 && xDown && zUnchanged) {
+				// Next to a wall down on the x axis
+				float distance = Math.abs(
+					(float)Math.pow((int)(movingTo.x - 1) - movingTo.x, 2) +
+					(float)Math.pow(movingTo.z - movingTo.z, 2)
+				);
 				if (distance < radiusSquared) {
-					System.out.println("Z NEG COLLISION");
-					this.zNegCollision = true;
+					this.collision = true;
 				}
 			}
 		}
