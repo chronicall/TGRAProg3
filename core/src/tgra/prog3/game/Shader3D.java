@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.GL20;
 
 public class Shader3D {
 	private int renderingProgramID;
+	
 	private int vertexShaderID;
 	private int fragmentShaderID;
 
@@ -105,6 +106,24 @@ public class Shader3D {
 		Gdx.gl.glUseProgram(this.renderingProgramID);
 	}
 
+	public int getVertexPointer() {
+		return this.positionLoc;
+	}
+	
+	public int getNormalPointer() {
+		return this.normalLoc;
+	}
+	
+	public void setModelMatrix(FloatBuffer matrix) {
+		Gdx.gl.glUniformMatrix4fv(this.modelMatrixLoc, 1, false, matrix);
+	}
+	public void setViewMatrix(FloatBuffer matrix) {
+		Gdx.gl.glUniformMatrix4fv(this.viewMatrixLoc, 1, false, matrix);
+	}
+	public void setProjectionMatrix(FloatBuffer matrix) {
+		Gdx.gl.glUniformMatrix4fv(this.projectionMatrixLoc, 1, false, matrix);
+	}
+	
 	public void setEyePosition(float x, float y, float z, float w) {
 		Gdx.gl.glUniform4f(this.eyePositionLoc, x, y, z, w);
 	}
@@ -166,25 +185,5 @@ public class Shader3D {
 	}
 	public void setSun2Specular(float r, float g, float b, float a) {
 		Gdx.gl.glUniform4f(this.sun2SpecularLoc, r, g, b, a);
-	}
-	
-	public int getVertexPointer() {
-		return this.positionLoc;
-	}
-	
-	public int getNormalPointer() {
-		return this.normalLoc;
-	}
-	
-	public void setModelMatrix(FloatBuffer matrix) {
-		Gdx.gl.glUniformMatrix4fv(this.modelMatrixLoc, 1, false, matrix);
-	}
-	
-	public void setViewMatrix(FloatBuffer matrix) {
-		Gdx.gl.glUniformMatrix4fv(this.viewMatrixLoc, 1, false, matrix);
-	}
-	
-	public void setProjectionMatrix(FloatBuffer matrix) {
-		Gdx.gl.glUniformMatrix4fv(this.projectionMatrixLoc, 1, false, matrix);
 	}
 }

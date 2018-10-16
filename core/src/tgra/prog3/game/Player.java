@@ -118,7 +118,7 @@ public class Player extends Character {
 				zUnchanged = true;
 			}
 			
-			float radiusSquared = (float)Math.pow(0.5 + 0.4, 2);
+			float radiusSquared = (float)Math.pow(0.5 + 0.8, 2);
 			
 			if (Maze.maze[(int)movingTo.x + 1][(int)movingTo.z] == 0 && xUp && zUnchanged) {
 				// Next to a wall up on the x axis

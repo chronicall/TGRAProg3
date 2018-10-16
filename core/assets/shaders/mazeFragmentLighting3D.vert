@@ -15,19 +15,11 @@ varying vec4 v_position;
 
 void main()
 {
-	vec4 position = vec4(a_position.x, a_position.y, a_position.z, 1.0);
-	position = u_modelMatrix * position;
-
-	vec4 normal = vec4(a_normal.x, a_normal.y, a_normal.z, 0.0);
-	normal = u_modelMatrix * normal;
-
 	// Global coordinate.
-	// Lighting related calculations
-	v_normal = normal;
-	v_position = position;
+	v_position = u_modelMatrix * vec4(a_position.x, a_position.y, a_position.z, 1.0);
+	v_normal = u_modelMatrix * vec4(a_normal.x, a_normal.y, a_normal.z, 0.0);
 	
 	// Local coordinates.
-	position = u_viewMatrix * position;
 
-	gl_Position = u_projectionMatrix * position;
+	gl_Position = u_projectionMatrix * u_viewMatrix * v_position;
 }

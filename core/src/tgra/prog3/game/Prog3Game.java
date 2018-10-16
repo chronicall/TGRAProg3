@@ -54,6 +54,7 @@ public class Prog3Game extends ApplicationAdapter implements InputProcessor {
 		this.fov = 90.0f;
 		this.playerScore = 0;
 		this.enemyScore = 0;
+		this.angle = 0.0f;
 		this.setup();
 	}
 	
@@ -94,9 +95,12 @@ public class Prog3Game extends ApplicationAdapter implements InputProcessor {
 	private void update() {
 		float deltaTime = Gdx.graphics.getDeltaTime();
 		
-		//this.timer += deltaTime * 60.0f;
+		/*this.timer += deltaTime * 1.0f;
+		if (this.timer >= 10) {
+			this.setup();
+		}*/
 
-		this.angle += 5.0f * deltaTime;
+		this.angle += 0.85f * deltaTime;
 		
 		if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
 			Gdx.app.exit();
@@ -126,20 +130,26 @@ public class Prog3Game extends ApplicationAdapter implements InputProcessor {
 		if(Gdx.input.isKeyPressed(Input.Keys.G)) {
 			this.fov += 30.0f * deltaTime;
 		}
-		//do all updates to the game
+		
 		this.player.update(deltaTime);
 		this.enemy.update(deltaTime);
 		
 		Point3D playerOriginPoint = this.player.origin.getOrigin();
 		// Check if the goal has been reached.
-		if ((int)playerOriginPoint.x == Maze.goalX && (int)playerOriginPoint.z == Maze.goalZ) {
+		if (
+			(playerOriginPoint.x <= Maze.goalX + 0.5f && playerOriginPoint.x >= Maze.goalX - 0.5f) && 
+			(playerOriginPoint.z <= Maze.goalZ + 0.5f && playerOriginPoint.z >= Maze.goalZ - 0.5f)
+		) {
 			this.playerScore++;
 			this.setup();
 		}
 		
 		Point3D enemyOriginPoint = this.enemy.origin.getOrigin();
 		// Check if enemy has reached the goal
-		if ((int)enemyOriginPoint.x == Maze.goalX && (int)enemyOriginPoint.z == Maze.goalZ) {
+		if (
+			(enemyOriginPoint.x <= Maze.goalX + 0.5f && enemyOriginPoint.x >= Maze.goalX - 0.5f) && 
+			(enemyOriginPoint.z <= Maze.goalZ + 0.5f && enemyOriginPoint.z >= Maze.goalZ - 0.5f)
+		) {
 			this.enemyScore++;
 			this.setup();
 		}
@@ -174,52 +184,56 @@ public class Prog3Game extends ApplicationAdapter implements InputProcessor {
 				this.shader.setEyePosition(this.miniMapCamera.eye.x, this.miniMapCamera.eye.y, this.miniMapCamera.eye.z, 1.0f);
 			}
 			
-			this.shader.setTreasureLightPosition(2.0f, 1.0f, 1.0f, 1.0f);
-			this.shader.setTreasureLightAmbient(0.0f, 0.0f, 0.0f, 1.0f);
-			this.shader.setTreasureLightDiffuse(1.0f, 0.8f, 0.2f, 1.0f);
-			this.shader.setTreasureLightSpecular(1.0f, 0.6f, 0.0f, 1.0f);
-			
 			float s = (float)Math.sin(this.angle * Math.PI / 180.0);
 			float c = (float)Math.cos(this.angle * Math.PI / 180.0);
 			
 			float s2 = (float)Math.sin((this.angle + 180.0) * Math.PI / 180.0);
 			float c2 = (float)Math.cos((this.angle + 180.0) * Math.PI / 180.0);
 			
-			this.shader.setSun1Direction(-(c2 * this.width / 2 + this.width / 2), -5.0f, -(s2 * this.height / 2 + this.height / 2), 0.0f);
-			this.shader.setSun1Ambient(0.05f, 0.05f, 0.05f, 1.0f);
-			this.shader.setSun1Diffuse(0.4f, 0.4f, 0.4f, 1.0f);
-			this.shader.setSun1Specular(0.5f, 0.5f, 0.5f, 1.0f);
+			// Set the treasure light. The ambient, diffuse and specular values are that of gold.
+			this.shader.setTreasureLightPosition(Maze.goalX, 5f, Maze.goalZ, 1.0f);
+			this.shader.setTreasureLightAmbient(0.24725f, 0.1995f, 0.075164f, 1.0f);
+			this.shader.setTreasureLightDiffuse(0.75164f, 0.60648f, 0.22648f, 1.0f);
+			this.shader.setTreasureLightSpecular(0.628281f, 0.555802f, 0.366065f, 1.0f);
 			
-			this.shader.setMaterialAmbient(0.05f, 0.05f, 0.05f, 1);
-			this.shader.setMaterialDiffuse(0.4f, 0.4f, 0.4f, 1.0f);
-			this.shader.setMaterialSpecular(0.5f, 0.5f, 0.5f, 1.0f);
+			// Set the first sun values. The ambient, diffuse and specular values that of copper.
+			this.shader.setSun1Direction(-(c2 * this.width / 2 + this.width / 2), -24.0f, -(s2 * this.height / 2 + this.height / 2), 0.0f);
+			this.shader.setSun1Ambient(0.19125f, 0.0735f, 0.0225f, 1.0f);
+			this.shader.setSun1Diffuse(0.7038f, 0.27048f, 0.0828f, 1.0f);
+			this.shader.setSun1Specular(0.256777f, 0.137622f, 0.086014f, 1.0f);
+			
+			this.shader.setMaterialAmbient(0.19125f, 0.0735f, 0.0225f, 1.0f);
+			this.shader.setMaterialDiffuse(0.7038f, 0.27048f, 0.0828f, 1.0f);
+			this.shader.setMaterialSpecular(0.256777f, 0.137622f, 0.086014f, 1.0f);
+			this.shader.setMaterialShiniess(0.1f);
 			ModelMatrix.main.pushMatrix();
-			ModelMatrix.main.addTranslation(c2 * this.width / 2 + this.width / 2, 15.0f, s2 * this.height / 2 + this.height / 2);
+			ModelMatrix.main.addTranslation(c2 * this.width / 2 + this.width / 2, 25.0f, s2 * this.height / 2 + this.height / 2);
 			ModelMatrix.main.addScale(0.4f, 0.4f, 0.4f);
 			this.shader.setModelMatrix(ModelMatrix.main.getMatrix());
 			SphereGraphic.drawSolidSphere();
 			ModelMatrix.main.popMatrix();
 			
-			this.shader.setSun2Direction(-(c * this.width / 2 + this.width / 2), -5.0f, -(s * this.height / 2 + this.height / 2), 0.0f);
-			this.shader.setSun2Ambient(0.05f, 0.05f, 0.05f, 1.0f);
-			this.shader.setSun2Diffuse(0.6f, 0.3f, 0.3f, 1.0f);
-			this.shader.setSun2Specular(0.5f, 0.5f, 0.5f, 1.0f);
+			// Set the second sun values. The ambient, diffuse and specular values that of bronze.
+			this.shader.setSun2Direction(-(c * this.width / 2 + this.width / 2), -24.0f, -(s * this.height / 2 + this.height / 2), 0.0f);
+			this.shader.setSun2Ambient(0.2125f, 0.1275f, 0.054f, 1.0f);
+			this.shader.setSun2Diffuse(0.714f, 0.4284f, 0.18144f, 1.0f);
+			this.shader.setSun2Specular(0.393548f, 0.271906f, 0.166721f, 1.0f);
 			
-			this.shader.setMaterialAmbient(0.05f, 0.05f, 0.05f, 1.0f);
-			this.shader.setMaterialDiffuse(0.6f, 0.3f, 0.3f, 1.0f);
-			this.shader.setMaterialSpecular(0.5f, 0.5f, 0.5f, 1.0f);
+			this.shader.setMaterialAmbient(0.2125f, 0.1275f, 0.054f, 1.0f);
+			this.shader.setMaterialDiffuse(0.714f, 0.4284f, 0.18144f, 1.0f);
+			this.shader.setMaterialSpecular(0.393548f, 0.271906f, 0.166721f, 1.0f);
+			this.shader.setMaterialShiniess(0.2f);
 			ModelMatrix.main.pushMatrix();
-			ModelMatrix.main.addTranslation(c * this.width / 2 + this.width / 2, 14.0f, s * this.height / 2 + this.height / 2);
+			ModelMatrix.main.addTranslation(c * this.width / 2 + this.width / 2, 25.0f, s * this.height / 2 + this.height / 2);
 			ModelMatrix.main.addScale(0.4f, 0.4f, 0.4f);
 			this.shader.setModelMatrix(ModelMatrix.main.getMatrix());
 			SphereGraphic.drawSolidSphere();
 			ModelMatrix.main.popMatrix();
 			
 			this.shader.setMaterialEmission(0.0f, 0.0f, 0.0f, 1.0f);
+			this.shader.setGlobalAmbient(0.2f, 0.2f, 0.2f, 1.0f);
 			
-			this.shader.setGlobalAmbient(0.1f, 0.1f, 0.1f, 1.0f);
-			
-			Maze.drawMaze(this.angle);
+			Maze.drawMaze();
 
 			this.enemy.display();
 			this.player.display();

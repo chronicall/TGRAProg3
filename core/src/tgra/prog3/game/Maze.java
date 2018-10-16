@@ -2,6 +2,8 @@ package tgra.prog3.game;
 
 import java.util.Random;
 
+import com.badlogic.gdx.Gdx;
+
 /**
  * Maze generation algorithm found here: https://github.com/joewing/maze/blob/master/Maze.java
  * BSD-3 license.
@@ -21,6 +23,8 @@ public class Maze {
 
 	private static int width;
 	private static int height;
+	
+	private static float angle;
 
 	private static Random rand;
 	
@@ -30,6 +34,7 @@ public class Maze {
 		Maze.shader = shader;
 		Maze.width = width;
 		Maze.height = height;
+		Maze.angle = 0.0f;
 
 		Maze.maze = new byte[width][];
 		Maze.rand = new Random();
@@ -113,7 +118,7 @@ public class Maze {
 		}
 	}
 
-	public static void drawMaze(float angle) {
+	public static void drawMaze() {
 		Maze.drawSurrounding();
 		Maze.shader.setMaterialAmbient(0.0f, 0.1f, 0.06f, 1.0f);
 		Maze.shader.setMaterialDiffuse(0.0f, 0.50980392f, 0.50980392f, 1.0f);
@@ -132,16 +137,13 @@ public class Maze {
 			}
 		}
 		
+		angle += 45.0f * Gdx.graphics.getDeltaTime();
 		float s = (float)Math.sin(angle * Math.PI / 180.0);
 		
 		// The goal/treasure
 		ModelMatrix.main.pushMatrix();
-		Maze.shader.setMaterialAmbient(0.25f, 0.20725f, 0.20725f, 1.0f);
-		Maze.shader.setMaterialDiffuse(1.0f, 0.829f, 0.829f, 1.0f);
-		Maze.shader.setMaterialSpecular(0.296648f, 0.296648f, 0.296648f, 1.0f);
-		Maze.shader.setMaterialEmission(0.0f, 0.0f, 0.0f, 1.0f);
-		Maze.shader.setMaterialShiniess(0.088f);
-		ModelMatrix.main.addTranslation(goalX, 1.2f + s, goalZ);
+		Maze.shader.setMaterialEmission(1.0f, 1.0f, 1.0f, 1.0f);
+		ModelMatrix.main.addTranslation(goalX, 1.5f + s, goalZ);
 		ModelMatrix.main.addScale(0.2f, 0.2f, 0.2f);
 		Maze.shader.setModelMatrix(ModelMatrix.main.getMatrix());
 		SphereGraphic.drawSolidSphere();
