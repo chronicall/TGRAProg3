@@ -21,7 +21,7 @@ public class Prog3Game extends ApplicationAdapter implements InputProcessor {
 	private int width;
 	private int height;
 	
-	private float timer;
+	//private float timer;
 	
 	private Player player;
 	private Enemy enemy;
@@ -43,7 +43,7 @@ public class Prog3Game extends ApplicationAdapter implements InputProcessor {
 		this.width = 19;
 		Maze.create(shader, this.width, this.height);
 
-		Gdx.gl.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		Gdx.gl.glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 
 		ModelMatrix.main = new ModelMatrix();
 		ModelMatrix.main.loadIdentityMatrix();
@@ -54,7 +54,6 @@ public class Prog3Game extends ApplicationAdapter implements InputProcessor {
 		this.fov = 90.0f;
 		this.playerScore = 0;
 		this.enemyScore = 0;
-		// Perspective camera at the first person level, stuck at y = 1, so it will not allow going up/down.
 		this.setup();
 	}
 	
@@ -72,17 +71,21 @@ public class Prog3Game extends ApplicationAdapter implements InputProcessor {
 		this.miniMapCamera = new Camera();
 		this.miniMapCamera.orthographicProjection(-10, 10, -10, 10, 3.0f, 1000);
 		
-		this.timer = 0;
+		//this.timer = 0;
 		
 		Point3D playerPosition = new Point3D(2.0f, 1.0f, 1.0f);
-		Vector3D playerDiffuse = new Vector3D(0.2f, 0.2f, 1.0f);
-		float playerShine = 10.0f;
-		this.player = new Player(this.shader, this.width, this.height, playerPosition, playerDiffuse, playerShine);
+		Vector3D playerAmbient = new Vector3D(0.1f, 0.18725f, 0.1745f);
+		Vector3D playerDiffuse = new Vector3D(0.396f, 0.74151f, 0.69102f);
+		Vector3D playerSpecular = new Vector3D(0.297254f, 0.30829f, 0.306678f);
+		float playerShine = 0.1f;
+		this.player = new Player(this.shader, this.width, this.height, playerPosition, playerAmbient, playerDiffuse, playerSpecular, playerShine);
 		
 		Point3D enemyPosition = new Point3D(this.width - 3.0f, 1.0f, this.height - 2.0f);
-		Vector3D enemyDiffuse = new Vector3D(1.0f, 0.2f, 2.0f);
-		float enemyShine = 10.0f;
-		this.enemy = new Enemy(this.shader, this.width, this.height, enemyPosition, enemyDiffuse, enemyShine);
+		Vector3D enemyAmbient = new Vector3D(0.1745f, 0.01175f, 0.01175f);
+		Vector3D enemyDiffuse = new Vector3D(0.61424f, 0.04136f, 0.04136f);
+		Vector3D enemySpecular = new Vector3D(0.727811f, 0.626959f, 0.626959f);
+		float enemyShine = 0.6f;
+		this.enemy = new Enemy(this.shader, this.width, this.height, enemyPosition, enemyAmbient, enemyDiffuse, enemySpecular, enemyShine);
 	}
 
 	private void input() {
@@ -93,7 +96,7 @@ public class Prog3Game extends ApplicationAdapter implements InputProcessor {
 		
 		//this.timer += deltaTime * 60.0f;
 
-		this.angle += 90.0f * deltaTime;
+		this.angle += 5.0f * deltaTime;
 		
 		if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
 			Gdx.app.exit();
@@ -154,6 +157,7 @@ public class Prog3Game extends ApplicationAdapter implements InputProcessor {
 	private void display() {
 		//do all actual drawing and rendering here
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+		ModelMatrix.main.loadIdentityMatrix();
 		
 		for (int viewNum = 0; viewNum < 2; viewNum++) {
 			if (viewNum == 0) {
@@ -170,90 +174,61 @@ public class Prog3Game extends ApplicationAdapter implements InputProcessor {
 				this.shader.setEyePosition(this.miniMapCamera.eye.x, this.miniMapCamera.eye.y, this.miniMapCamera.eye.z, 1.0f);
 			}
 			
-			ModelMatrix.main.loadIdentityMatrix();
+			this.shader.setTreasureLightPosition(2.0f, 1.0f, 1.0f, 1.0f);
+			this.shader.setTreasureLightAmbient(0.0f, 0.0f, 0.0f, 1.0f);
+			this.shader.setTreasureLightDiffuse(1.0f, 0.8f, 0.2f, 1.0f);
+			this.shader.setTreasureLightSpecular(1.0f, 0.6f, 0.0f, 1.0f);
 			
 			float s = (float)Math.sin(this.angle * Math.PI / 180.0);
 			float c = (float)Math.cos(this.angle * Math.PI / 180.0);
 			
-			this.shader.setLightPosition(2.0f, 4.5f, 1.0f, 1.0f);
-			this.shader.setLightColour(1.0f, 1.0f, 1.0f, 1.0f);
+			float s2 = (float)Math.sin((this.angle + 180.0) * Math.PI / 180.0);
+			float c2 = (float)Math.cos((this.angle + 180.0) * Math.PI / 180.0);
+			
+			this.shader.setSun1Direction(-(c2 * this.width / 2 + this.width / 2), -5.0f, -(s2 * this.height / 2 + this.height / 2), 0.0f);
+			this.shader.setSun1Ambient(0.05f, 0.05f, 0.05f, 1.0f);
+			this.shader.setSun1Diffuse(0.4f, 0.4f, 0.4f, 1.0f);
+			this.shader.setSun1Specular(0.5f, 0.5f, 0.5f, 1.0f);
+			
+			this.shader.setMaterialAmbient(0.05f, 0.05f, 0.05f, 1);
+			this.shader.setMaterialDiffuse(0.4f, 0.4f, 0.4f, 1.0f);
+			this.shader.setMaterialSpecular(0.5f, 0.5f, 0.5f, 1.0f);
+			ModelMatrix.main.pushMatrix();
+			ModelMatrix.main.addTranslation(c2 * this.width / 2 + this.width / 2, 15.0f, s2 * this.height / 2 + this.height / 2);
+			ModelMatrix.main.addScale(0.4f, 0.4f, 0.4f);
+			this.shader.setModelMatrix(ModelMatrix.main.getMatrix());
+			SphereGraphic.drawSolidSphere();
+			ModelMatrix.main.popMatrix();
+			
+			this.shader.setSun2Direction(-(c * this.width / 2 + this.width / 2), -5.0f, -(s * this.height / 2 + this.height / 2), 0.0f);
+			this.shader.setSun2Ambient(0.05f, 0.05f, 0.05f, 1.0f);
+			this.shader.setSun2Diffuse(0.6f, 0.3f, 0.3f, 1.0f);
+			this.shader.setSun2Specular(0.5f, 0.5f, 0.5f, 1.0f);
+			
+			this.shader.setMaterialAmbient(0.05f, 0.05f, 0.05f, 1.0f);
+			this.shader.setMaterialDiffuse(0.6f, 0.3f, 0.3f, 1.0f);
+			this.shader.setMaterialSpecular(0.5f, 0.5f, 0.5f, 1.0f);
+			ModelMatrix.main.pushMatrix();
+			ModelMatrix.main.addTranslation(c * this.width / 2 + this.width / 2, 14.0f, s * this.height / 2 + this.height / 2);
+			ModelMatrix.main.addScale(0.4f, 0.4f, 0.4f);
+			this.shader.setModelMatrix(ModelMatrix.main.getMatrix());
+			SphereGraphic.drawSolidSphere();
+			ModelMatrix.main.popMatrix();
+			
+			this.shader.setMaterialEmission(0.0f, 0.0f, 0.0f, 1.0f);
 			
 			this.shader.setGlobalAmbient(0.1f, 0.1f, 0.1f, 1.0f);
 			
-			// Temporary coordinate frame. Red is X, green is Y, blue is Z
-			// REMOVE BEFORE HANDIN
-			ModelMatrix.main.pushMatrix();
-			this.shader.setMaterialDiffuse(1, 0, 0, 1.0f);
-			ModelMatrix.main.addTranslation(0, 0, 0);
-			ModelMatrix.main.addScale(10.0f, 0.2f, 0.2f);
-			this.shader.setModelMatrix(ModelMatrix.main.getMatrix());
-			BoxGraphic.drawSolidCube();
-			ModelMatrix.main.popMatrix();
-			
-			ModelMatrix.main.pushMatrix();
-			this.shader.setMaterialDiffuse(0, 1, 0, 1.0f);
-			ModelMatrix.main.addTranslation(0, 0, 0);
-			ModelMatrix.main.addScale(0.2f, 10.0f, 0.2f);
-			this.shader.setModelMatrix(ModelMatrix.main.getMatrix());
-			BoxGraphic.drawSolidCube();
-			ModelMatrix.main.popMatrix();
-			
-			ModelMatrix.main.pushMatrix();
-			this.shader.setMaterialDiffuse(0, 0, 1, 1.0f);
-			ModelMatrix.main.addTranslation(0, 0, 0);
-			ModelMatrix.main.addScale(0.2f, 0.2f, 10.0f);
-			this.shader.setModelMatrix(ModelMatrix.main.getMatrix());
-			BoxGraphic.drawSolidCube();
-			ModelMatrix.main.popMatrix();
-			// END REMOVE BEFORE HANDIN
-			
 			Maze.drawMaze(this.angle);
-			
-			this.shader.setMaterialDiffuse(1.0f, 0.0f, 0.0f, 1.0f);
-			this.shader.setMaterialSpecular(1.0f, 1.0f, 1.0f, 1.0f);
-			this.shader.setMaterialShiniess(20.0f);
-			ModelMatrix.main.pushMatrix();
-			ModelMatrix.main.addTranslation(2.0f, 1.5f, 0.0f);
-			ModelMatrix.main.addScale(0.5f, 1.0f, 0.5f);
-			this.shader.setModelMatrix(ModelMatrix.main.getMatrix());
-			SphereGraphic.drawSolidSphere();
-			ModelMatrix.main.popMatrix();
-			
-			ModelMatrix.main.pushMatrix();
-			ModelMatrix.main.addTranslation(3.0f, 1.5f, 0.0f);
-			ModelMatrix.main.addScale(0.5f, 1.0f, 0.5f);
-			this.shader.setModelMatrix(ModelMatrix.main.getMatrix());
-			SphereGraphic.drawSolidSphere();
-			ModelMatrix.main.popMatrix();
-			
-			this.shader.setMaterialDiffuse(0.0f, 0.0f, 1.0f, 1.0f);
-			this.shader.setMaterialDiffuse(1.0f, 1.0f, 1.0f, 1.0f);
-			this.shader.setMaterialShiniess(20.0f);
-			ModelMatrix.main.pushMatrix();
-			ModelMatrix.main.addTranslation(0.0f, 1.5f, 2.0f);
-			ModelMatrix.main.addScale(0.5f, 1.0f, 0.5f);
-			this.shader.setModelMatrix(ModelMatrix.main.getMatrix());
-			SphereGraphic.drawSolidSphere();
-			ModelMatrix.main.popMatrix();
-			
-			ModelMatrix.main.pushMatrix();
-			ModelMatrix.main.addTranslation(0.0f, 1.5f, 3.0f);
-			ModelMatrix.main.addScale(0.5f, 1.0f, 0.5f);
-			this.shader.setModelMatrix(ModelMatrix.main.getMatrix());
-			SphereGraphic.drawSolidSphere();
-			ModelMatrix.main.popMatrix();
 
 			this.enemy.display();
-			
 			this.player.display();
-			// Maybe include a pyramid or something inside the maze later on. Idk..
-			//Pyramid.drawPyramid(15.0f, 0.0f, 15.0f, 0.8f, 0.3f, 1.0f);
-			//Pyramid.drawPyramid(35.0f, 0.0f, 15.0f, 0.3f, 0.8f, 0.3f);
-			//Pyramid.drawPyramid(15.0f, 0.0f, 35.0f, 0.4f, 0.3f, 1.0f);
-			//Pyramid.drawPyramid(35.0f, 0.0f, 35.0f, 0.7f, 0.8f, 0.3f);
 			
 			if (viewNum == 1) {
-				this.shader.setMaterialDiffuse(1.0f, 0.3f, 0.1f, 1.0f);
+				this.shader.setMaterialAmbient(0.0f, 0.0f, 0.0f, 1.0f);
+				this.shader.setMaterialDiffuse(0.5f, 0.0f, 0.0f, 1.0f);
+				this.shader.setMaterialSpecular(0.7f, 0.6f, 0.6f, 1.0f);
+				this.shader.setMaterialShiniess(0.25f);
 				ModelMatrix.main.pushMatrix();
 				ModelMatrix.main.addTranslation(this.camera.eye.x, this.camera.eye.y, this.camera.eye.z);
 				ModelMatrix.main.addScale(0.35f, 0.35f, 0.35f);

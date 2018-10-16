@@ -6,8 +6,8 @@ import com.badlogic.gdx.Input.Keys;
 public class Player extends Character {
 	private boolean collision;
 	
-	public Player(Shader3D shader, int width, int height, Point3D position, Vector3D matColour, float shine) {
-		super(shader, width, height, position, matColour, shine);
+	public Player(Shader3D shader, int width, int height, Point3D position, Vector3D matAmbient, Vector3D matDiffuse, Vector3D matSpecular, float shine) {
+		super(shader, width, height, position, matAmbient, matDiffuse, matSpecular, shine);
 		this.collision = false;
 	}
 	
